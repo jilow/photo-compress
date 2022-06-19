@@ -40,16 +40,16 @@ class Image {
         const tags = exifReader(exif)
 
         return {
-            make: tags.image.Make,
-            model: tags.image.Model,
-            speed: tags.exif.ExposureTime,
-            fStop: tags.exif.FNumber,
-            iso: tags.exif.ISO,
-            focalLength: tags.exif.FocalLength,
-            focalLengthIn35: tags.exif.FocalLengthIn35mmFormat,
-            lensModal: tags.exif.LensModel,
-            lensSpecs: tags.exif.LensSpecification,
-            dateTime: tags.exif.DateTimeOriginal,
+            make: tags.image?.Make,
+            model: tags.image?.Model,
+            speed: tags.exif?.ExposureTime,
+            fStop: tags.exif?.FNumber,
+            iso: tags.exif?.ISO,
+            focalLength: tags.exif?.FocalLength,
+            focalLengthIn35: tags.exif?.FocalLengthIn35mmFormat,
+            lensModal: tags.exif?.LensModel,
+            lensSpecs: tags.exif?.LensSpecification,
+            dateTime: tags.exif?.DateTimeOriginal,
         }
     }
 }
