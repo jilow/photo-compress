@@ -2,6 +2,16 @@
 <html>
   <head>
     <title>Express File Upload</title>
+    <script type="text/javascript">
+        function previewImage() {
+            const reader = new FileReader();
+            const image = document.querySelector('input[name="photo"]').files[0];
+            reader.readAsDataURL(image);
+            reader.onload = function (event) {
+                document.getElementById("preview").src = event.target.result;
+            };
+        }
+    </script>
   </head>
   <body>
     <h1>Express File Upload</h1>
@@ -9,7 +19,8 @@
       <input type="text" placeholder="Image title" name="title" />
       <input type="textarea" placeholder="Image description" name="description" rows="4" cols="50" />
       <input type="textarea" placeholder="Image tags (comma seperated)" name="tags" rows="4" cols="50" />
-      <input type="file" name="photo" />
+      <input type="file" name="photo" onchange="previewImage()" />
+      <img id="preview" style="width: 200px; height: auto;" />
       <input type="submit" />
     </form>
   </body>
