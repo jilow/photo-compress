@@ -6,6 +6,9 @@
   <body>
     <h1>Express File Upload</h1>
     <form method="POST" action="/upload" enctype="multipart/form-data">
+      <input type="text" placeholder="Image title" name="title" />
+      <input type="textarea" placeholder="Image description" name="description" rows="4" cols="50" />
+      <input type="textarea" placeholder="Image tags (comma seperated)" name="tags" rows="4" cols="50" />
       <input type="file" name="photo" />
       <input type="submit" />
     </form>
