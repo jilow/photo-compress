@@ -20,13 +20,18 @@ app.get('/', (req, res) => {
 });
 
 app.get('/data', async (req, res) => {
-    const images = db.get('data').map(image => image.filename) || []
+    const images = (db.get('data') || []).map(image => image.filename)
     const tags = db.get('tags') || []
 
     res.send({
         images,
         tags
     })
+})
+
+app.get('/image/:filename', (req, res) => {
+    console.log(rel(`../processed/${req.params.filename}`))
+    res.sendFile(rel(`../processed/${req.params.filename}`));
 })
 
 app.post('/upload', async (req, res) => {
@@ -81,7 +86,7 @@ app.post('/upload', async (req, res) => {
         res.send({
             status: 'success',
             message: `Processed image ${nameNoExt}`,
-            data: metadata
+            image: largePath.split('/').pop(),
         });
     } catch (err) {
         console.error(err);

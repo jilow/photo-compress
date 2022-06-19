@@ -2,26 +2,169 @@
 <html>
   <head>
     <title>Express File Upload</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script type="text/javascript">
-        function previewImage() {
+        let images = [];
+
+        const loadData = async () => {
+          const data = await fetch('./data').then((res) => res.json());
+
+          images = data.images;
+
+          document.querySelector('input[name="tags"]').setAttribute('placeholder', data.tags.join(', '));
+        }
+
+        const handleOnChange = () => {
             const reader = new FileReader();
             const image = document.querySelector('input[name="photo"]').files[0];
+            
+            // Preview image
             reader.readAsDataURL(image);
             reader.onload = function (event) {
                 document.getElementById("preview").src = event.target.result;
             };
+
+            // Show warning if exists
+            if (images.includes(image.name)) {
+              document.querySelector('#image-warning').innerHTML = `Image ${image.name} already exists in database.`
+            }
         }
+
+        const submitForm = async () => {
+          const formData = new FormData(document.querySelector('form'))
+
+          loading(true);
+
+          const result = await fetch('/upload', {
+            method: 'post',
+            body: formData,
+          }).then((res) => res.json())
+
+          const image = await fetch(`/image/${result.image}`).then((res) => res.blob());
+          document.getElementById("preview").src = URL.createObjectURL(image);
+
+          loading(false);
+
+          document.querySelector('#success-alert').hidden = false;
+          document.querySelector('#success-message').innerHTML = result.message;
+
+          loadData();
+        }
+
+        const loading = (loading) => {
+          const button = document.querySelector('button[type="submit"]');
+          const buttonLoading = document.querySelector('#button-loading');
+          const buttonReady = document.querySelector('#button-ready');
+
+          if (loading) {
+            document.getElementById("preview").classList.add('opacity-70');
+            button.setAttribute('disabled', true);
+            buttonLoading.hidden = false;
+            buttonReady.hidden = true;
+          } else {
+            document.getElementById("preview").classList.remove('opacity-70');
+            button.removeAttribute('disabled');
+            buttonLoading.hidden = true;
+            buttonReady.hidden = false;
+          }
+        }
+
+        const closeAlert = () => {
+          document.querySelector('#success-alert').hidden = true;
+          document.querySelector('#success-message').innerHTML = '';
+        }
+
+        loadData();
     </script>
+    <style>
+      *[hidden] {
+        display: none !important;
+      }
+    </style>
   </head>
   <body>
-    <h1>Express File Upload</h1>
-    <form method="POST" action="/upload" enctype="multipart/form-data">
+    <div class="container mx-auto px-6 py-8 text-2xl">
+      <h1 class="pb-6">Upload images</h1>
+      <div id="success-alert" hidden class="alert bg-green-100 rounded-lg py-5 px-6 mb-3 text-base text-green-700 inline-flex items-center justify-center items-center w-full alert-dismissible fade show" role="alert">
+        <strong class="mr-1">Success! </strong> <span id="success-message"></span>
+        <button type="button" class="btn-close box-content p-1 font-bold ml-auto text-green-900 border-none rounded-none opacity-50 focus:shadow-none focus:outline-none focus:opacity-100 hover:text-green-900 hover:opacity-75 hover:no-underline" data-bs-dismiss="alert" aria-label="Close" onclick="closeAlert()">X</button>
+      </div>
+      <div class="flex">
+        <img id="preview" class="w-2/3 bg-slate-200 transition duration-150 ease-in-out" />
+        <div class="w-1/3 bg-slate-800 text-slate-100 px-6 py-8">
+          <form method="POST" action="/upload" enctype="multipart/form-data" onsubmit="event.preventDefault(); submitForm()">
+            <label class="block pb-6">
+              <span class="sr-only">Choose profile photo</span>
+              <input type="file" type="file" name="photo" onchange="handleOnChange()" class="block w-full text-sm text-slate-500
+                file:mr-4 file:py-2 file:px-4
+                file:rounded-full file:border-0
+                file:text-sm file:font-semibold
+                file:bg-slate-50 file:text-slate-700
+                hover:file:bg-slate-100
+              "/>
+              <span id="image-warning" class="text-xs text-pink-600"></span>
+            </label>
+            <label class="block pb-6">
+              <span class="block text-sm font-medium text-slate-200">Title</span>
+              <input type="text" name="name" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400
+                focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 text-slate-800
+                invalid:border-pink-500 invalid:text-pink-600
+                focus:invalid:border-pink-500 focus:invalid:ring-pink-500
+              "/>
+            </label>
+            <label class="block pb-6">
+              <span class="block text-sm font-medium text-slate-200">Description</span>
+              <textarea type="text" name="description" rows="5" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400
+                focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 text-slate-800
+                invalid:border-pink-500 invalid:text-pink-600
+                focus:invalid:border-pink-500 focus:invalid:ring-pink-500
+              "></textarea>
+            </label>
+            <label class="block pb-6">
+              <span class="block text-sm font-medium text-slate-200">Tags</span>
+              <input type="text" name="tags" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400
+                focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 text-slate-800
+                invalid:border-pink-500 invalid:text-pink-600
+                focus:invalid:border-pink-500 focus:invalid:ring-pink-500
+              "/>
+            </label>
+            <button type="submit" class="inline-block px-6 py-2.5 bg-blue-600 text-white font-medium text-sm leading-tight uppercase rounded shadow-md hover:bg-blue-700
+              hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none
+              focus:ring-0 active:bg-blue-800 active:shadow-lg
+              transition duration-150 ease-in-out
+              disabled:bg-blue-900"
+            >
+              <span id="button-loading" hidden class="flex justify-center items-center">
+                <svg role="status" class="w-6 h-6 mr-2 text-slate-200 animate-spin dark:text-slate-600 fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
+                    <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
+                </svg>
+                Processing...
+              </span>
+              <span id="button-ready">
+                Submit
+              </span>
+            </button>
+
+          </form>
+        </div>
+      </div>
+    </div>
+      
+
+    <!-- <form method="POST" action="/upload" enctype="multipart/form-data">
       <input type="text" placeholder="Image title" name="title" />
       <input type="textarea" placeholder="Image description" name="description" rows="4" cols="50" />
       <input type="textarea" placeholder="Image tags (comma seperated)" name="tags" rows="4" cols="50" />
-      <input type="file" name="photo" onchange="previewImage()" />
+      <input type="file" name="photo" onchange="handleOnChange()" />
       <img id="preview" style="width: 200px; height: auto;" />
-      <input type="submit" />
-    </form>
+      <span id="image-warning"></span>
+    </form> -->
+
+    <span id="tags"></span>
+
+    <script type="text/javascript">
+        
+    </script>
   </body>
 </html>

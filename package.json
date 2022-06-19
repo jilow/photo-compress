@@ -6,7 +6,8 @@
   "author": "Jiaan <jilow@users.noreply.github.com>",
   "license": "MIT",
   "scripts": {
-    "start": "node ./src/index.js"
+    "start": "node ./src/index.js",
+    "start:live": "nodemon ./src/index.js --watch src --watch public --ext '*'"
   },
   "dependencies": {
     "exif-reader": "^1.0.3",
@@ -15,5 +16,8 @@
     "piexifjs": "^1.0.6",
     "sharp": "^0.30.6",
     "simple-json-db": "^2.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.16"
   }
 }
