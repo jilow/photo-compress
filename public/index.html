@@ -43,10 +43,11 @@
           const image = await fetch(`/image/${result.image}`).then((res) => res.blob());
           document.getElementById("preview").src = URL.createObjectURL(image);
 
-          loading(false);
+          document.querySelector('#image-warning').innerHTML = '';
+          document.querySelector('input[name="photo"]').value = null;
 
-          document.querySelector('#success-alert').hidden = false;
-          document.querySelector('#success-message').innerHTML = result.message;
+          loading(false);
+          showAlert(result.message);
 
           loadData();
         }
@@ -67,6 +68,11 @@
             buttonLoading.hidden = true;
             buttonReady.hidden = false;
           }
+        }
+
+        const showAlert = (message) => {
+          document.querySelector('#success-alert').hidden = false;
+          document.querySelector('#success-message').innerHTML = message;
         }
 
         const closeAlert = () => {
@@ -95,7 +101,7 @@
           <form method="POST" action="/upload" enctype="multipart/form-data" onsubmit="event.preventDefault(); submitForm()">
             <label class="block pb-6">
               <span class="sr-only">Choose profile photo</span>
-              <input type="file" type="file" name="photo" onchange="handleOnChange()" class="block w-full text-sm text-slate-500
+              <input required type="file" type="file" name="photo" onchange="handleOnChange()" class="block w-full text-sm text-slate-500
                 file:mr-4 file:py-2 file:px-4
                 file:rounded-full file:border-0
                 file:text-sm file:font-semibold
@@ -106,27 +112,20 @@
             </label>
             <label class="block pb-6">
               <span class="block text-sm font-medium text-slate-200">Title</span>
-              <input type="text" name="name" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400
+              <input required type="text" name="name" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400
                 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 text-slate-800
-                invalid:border-pink-500 invalid:text-pink-600
-                focus:invalid:border-pink-500 focus:invalid:ring-pink-500
-              "/>
+                "/>
             </label>
             <label class="block pb-6">
               <span class="block text-sm font-medium text-slate-200">Description</span>
-              <textarea type="text" name="description" rows="5" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400
+              <textarea required type="text" name="description" rows="5" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400
                 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 text-slate-800
-                invalid:border-pink-500 invalid:text-pink-600
-                focus:invalid:border-pink-500 focus:invalid:ring-pink-500
-              "></textarea>
+                "></textarea>
             </label>
             <label class="block pb-6">
               <span class="block text-sm font-medium text-slate-200">Tags</span>
-              <input type="text" name="tags" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400
-                focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 text-slate-800
-                invalid:border-pink-500 invalid:text-pink-600
-                focus:invalid:border-pink-500 focus:invalid:ring-pink-500
-              "/>
+              <input required type="text" name="tags" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400
+                focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 text-slate-800"/>
             </label>
             <button type="submit" class="inline-block px-6 py-2.5 bg-blue-600 text-white font-medium text-sm leading-tight uppercase rounded shadow-md hover:bg-blue-700
               hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none
