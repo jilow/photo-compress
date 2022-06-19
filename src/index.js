@@ -51,11 +51,11 @@ app.post('/upload', async (req, res) => {
         const smallBuffer = await image.toJpeg(450, 80)
         const largeBuffer = await image.toJpeg(1200, 95, watermark, true)
 
-        const smallPath = `../processed/${nameNoExt}_450px.jpeg`;
-        const largePath = `../processed/${nameNoExt}_1200px.jpeg`;
+        const smallName = `${nameNoExt}_450px.jpeg`;
+        const largeName = `${nameNoExt}_1200px.jpeg`;
 
-        await throwOnFailed(fs.writeFile(rel(smallPath), smallBuffer))
-        await throwOnFailed(fs.writeFile(rel(largePath), largeBuffer))
+        await throwOnFailed(fs.writeFile(rel(`../processed/${smallName}`), smallBuffer))
+        await throwOnFailed(fs.writeFile(rel(`../processed/${largeName}`), largeBuffer))
 
         const tinyBase64 = 'data:image/jpg;base64,' + tinyBuffer.toString('base64')
         
@@ -69,8 +69,8 @@ app.post('/upload', async (req, res) => {
             description,
             tags: tagsArr,
             base64: tinyBase64,
-            small: smallPath,
-            large: largePath,
+            small: smallName,
+            large: largeName,
             metadata,
         });
         db.set('data', rows);
@@ -86,7 +86,7 @@ app.post('/upload', async (req, res) => {
         res.send({
             status: 'success',
             message: `Processed image ${nameNoExt}`,
-            image: largePath.split('/').pop(),
+            image: largeName,
         });
     } catch (err) {
         console.error(err);
