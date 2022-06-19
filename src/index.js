@@ -1,7 +1,7 @@
 const fs = require('node:fs/promises');
-const express = require("express");
-const fileUpload = require("express-fileupload");
-const path = require("path");
+const express = require('express');
+const fileUpload = require('express-fileupload');
+const path = require('path');
 const JSONdb = require('simple-json-db');
 const Image = require('./image');
 
@@ -15,14 +15,14 @@ const db = new JSONdb(rel('../processed/data.json'));
 const app = express();
 app.use(fileUpload());
 
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "../public/index.html"));
+app.get('/', (req, res) => {
+    res.sendFile(rel('../public/index.html'));
 });
 
-app.post("/upload", async (req, res) => {
+app.post('/upload', async (req, res) => {
     // TODO: process the file upload
     if (!req.files) {
-        return res.status(400).send("No files were uploaded.");
+        return res.status(400).send('No files were uploaded.');
     }
 
     const { data, name } = req.files.photo;
