@@ -33,6 +33,7 @@ app.post('/upload', async (req, res) => {
         const nameNoExt = name.split('.')[0];
 
         const metadata = await image.metadata()
+        const tinyBuffer = await image.toJpeg(28, 50)
         const smallBuffer = await image.toJpeg(450, 80)
         const largeBuffer = await image.toJpeg(1200, 95, watermark, true)
 
@@ -42,9 +43,12 @@ app.post('/upload', async (req, res) => {
         await throwOnFailed(fs.writeFile(rel(`../processed/${nameNoExt}_450px.jpeg`), smallBuffer))
         await throwOnFailed(fs.writeFile(rel(`../processed/${nameNoExt}_1200px.jpeg`), largeBuffer))
 
+        const tinyBase64 = 'data:image/jpg;base64, ' + tinyBuffer.toString('base64')
+
         const rows = db.get('data') || [];
         rows.push({
             id: rows.length + 1,
+            base64: tinyBase64,
             small: smallPath,
             large: largePath,
             metadata,
