@@ -1,2 +1,3 @@
 # photo-compress
-Compresses photographs for the web
+
+Compress photographs for the web
