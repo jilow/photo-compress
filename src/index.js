@@ -1,38 +1,40 @@
 const fs = require('node:fs/promises');
 const express = require('express');
 const fileUpload = require('express-fileupload');
-const path = require('path');
-const JSONdb = require('simple-json-db');
 const Image = require('./image');
+const DatabaseConnection = require('./database')
+const { relativePath, throwOnFailed } = require('./utils');
+
+const PORT = process.env.PORT || 8080;
+
+const DB_CONN = new DatabaseConnection(relativePath('../processed/data.json'));
 
 let watermark;
-
-const rel = (relativePath) => path.join(__dirname, relativePath)
-const throwOnFailed = (promise) => promise.then(err => { if (err) throw new Error(err) })
-
-const db = new JSONdb(rel('../processed/data.json'));
 
 const app = express();
 app.use(fileUpload());
 
 app.get('/', (req, res) => {
-    res.sendFile(rel('../public/index.html'));
+    res.sendFile(relativePath('../public/index.html'));
 });
 
+app.use(express.static('public'))
+
 app.get('/data', async (req, res) => {
-    const images = (db.get('data') || []).map(image => image.filename)
-    const tags = db.get('tags') || []
+    const { images, tags } = DB_CONN.getData();
 
     res.send({
-        images,
-        tags
-    })
-})
+        images: images.map(image => image.originalFilename),
+        tags,
+    });
+});
 
 app.get('/image/:filename', (req, res) => {
-    console.log(rel(`../processed/${req.params.filename}`))
-    res.sendFile(rel(`../processed/${req.params.filename}`));
-})
+    res.sendFile(relativePath(`../processed/${req.params.filename}`));
+});
+
+// Temporary to be consumed by website
+app.use(express.static('processed'));
 
 app.post('/upload', async (req, res) => {
     if (!req.files) {
@@ -41,61 +43,54 @@ app.post('/upload', async (req, res) => {
 
     try {
         const { title, description, tags } = req.body;
-        const { data, name } = req.files.photo;
+        const { data, name: filename } = req.files.photo;
 
-        const image = new Image(data)
-        const nameNoExt = name.split('.')[0];
+        const image = new Image(data);
 
-        const metadata = await image.metadata()
-        const tinyBuffer = await image.toJpeg(28, 50)
-        const smallBuffer = await image.toJpeg(450, 80)
-        const largeBuffer = await image.toJpeg(1200, 95, watermark, true)
+        watermark = watermark ?? await fs.readFile(relativePath('./signatures/sig_white.png'));
 
-        const smallName = `${nameNoExt}_450px.jpeg`;
-        const largeName = `${nameNoExt}_1200px.jpeg`;
+        const metadata = await image.metadata();
+        const tinyBuffer = await image.toJpeg(28, 50);
+        const smallBuffer = await image.toJpeg(450, 80);
+        const largeBuffer = await image.toJpeg(1200, 95, true, watermark);
 
-        await throwOnFailed(fs.writeFile(rel(`../processed/${smallName}`), smallBuffer))
-        await throwOnFailed(fs.writeFile(rel(`../processed/${largeName}`), largeBuffer))
+        // const nameNoExt = name.split('.')[0];
+        const newFilename = title.replace(' ', '_').replace(/[^\w\s_]/gi, '');
+        const small = `${newFilename}_450px.jpeg`;
+        const large = `${newFilename}_1200px.jpeg`;
 
-        const tinyBase64 = 'data:image/jpg;base64,' + tinyBuffer.toString('base64')
+        await Promise.all([
+            throwOnFailed(fs.writeFile(relativePath(`../processed/${small}`), smallBuffer)),
+            throwOnFailed(fs.writeFile(relativePath(`../processed/${large}`), largeBuffer))
+        ]);
+
+        const base64 = 'data:image/jpg;base64,' + tinyBuffer.toString('base64');
         
-        const tagsArr = tags ? tags.replace(/\s/g, '').split(',') : []
+        const tagsArr = tags ? tags.replace(/\s/g, '').split(',') : [];
 
-        const rows = db.get('data') || [];
-        rows.push({
-            id: rows.length + 1,
-            title: title || nameNoExt,
-            filename: name,
+        DB_CONN.insertImage({
+            title,
             description,
-            tags: tagsArr,
-            base64: tinyBase64,
-            small: smallName,
-            large: largeName,
+            base64,
+            small,
+            large,
             metadata,
+            originalFilename: filename,
         });
-        db.set('data', rows);
 
-        if (tagsArr.length > 0) {
-            const tagRows = new Set(db.get('tags') || []);
-            tagsArr.forEach(tag => tagRows.add(tag));
-            db.set('tags', Array.from(tagRows))
-        }
-
-        db.sync();
+        DB_CONN.insertTags(tagsArr);
 
         res.send({
             status: 'success',
-            message: `Processed image ${nameNoExt}`,
-            image: largeName,
+            message: `Processed image ${title}`,
+            image: large,
         });
     } catch (err) {
         console.error(err);
         res.status(500).send('Internal server error. ' + err.toString());
     }
-
 });
 
-app.listen(8080, async () => {
-    watermark = await fs.readFile(rel('./signatures/sig_white.png'))
-    console.log('App is running on port 8080')
-})
+app.listen(PORT, async () => {
+    console.log(`App is running on port ${PORT}`);
+});
