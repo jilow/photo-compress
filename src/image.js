@@ -9,47 +9,44 @@ const addAuthorData = async (buffer) => {
             [piexif.ImageIFD.Artist]: 'Jiaan Louw',
             [piexif.ImageIFD.Copyright]: 'Jiaan Louw, All Rights Reserved',
         },
-        // Exif: {
-        //     [piexif.ExifIFD.DateTimeOriginal]: tags.exif.DateTimeOriginal,
-        // }
     })
-    const newData = piexif.insert(exifBytes, data)
+    const newData = piexif.insert(exifBytes, data);
 
-    return Buffer.from(newData, 'binary')
+    return Buffer.from(newData, 'binary');
 }
 
 class Image {
     constructor(inputBuffer) {
-        this.image = sharp(inputBuffer)
+        this.image = sharp(inputBuffer);
     }
 
-    async toJpeg(size, quality = 80, signature, addExif = false) {
+    async toJpeg(size, quality = 80, addExif = false, signature = null) {
         const composites = signature ? [{ input: signature, gravity: 'southeast', blend: 'soft-light' }] : []
 
         const buffer = await this.image
                             .resize(size)
                             .composite(composites)
                             .jpeg({ mozjpeg: true, quality })
-                            .toBuffer()
+                            .toBuffer();
 
         return addExif ? addAuthorData(buffer) : buffer;
     }
 
     async metadata() {
-        const { exif } = await this.image.metadata()
-        const tags = exifReader(exif)
+        const { exif } = await this.image.metadata();
+        const tags = exifReader(exif);
 
         return {
-            make: tags.image.Make,
-            model: tags.image.Model,
-            speed: tags.exif.ExposureTime,
-            fStop: tags.exif.FNumber,
-            iso: tags.exif.ISO,
-            focalLength: tags.exif.FocalLength,
-            focalLengthIn35: tags.exif.FocalLengthIn35mmFormat,
-            lensModal: tags.exif.LensModel,
-            lensSpecs: tags.exif.LensSpecification,
-            dateTime: tags.exif.DateTimeOriginal,
+            make: tags.image?.Make,
+            model: tags.image?.Model,
+            speed: tags.exif?.ExposureTime,
+            fStop: tags.exif?.FNumber,
+            iso: tags.exif?.ISO,
+            focalLength: tags.exif?.FocalLength,
+            focalLengthIn35: tags.exif?.FocalLengthIn35mmFormat,
+            lensModal: tags.exif?.LensModel,
+            lensSpecs: tags.exif?.LensSpecification,
+            dateTime: tags.exif?.DateTimeOriginal,
         }
     }
 }
