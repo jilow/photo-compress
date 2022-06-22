@@ -33,7 +33,7 @@ class Image {
     }
 
     async metadata() {
-        const { exif } = await this.image.metadata();
+        const { width, height, exif } = await this.image.metadata();
         const tags = exifReader(exif);
 
         return {
@@ -47,6 +47,7 @@ class Image {
             lensModal: tags.exif?.LensModel,
             lensSpecs: tags.exif?.LensSpecification,
             dateTime: tags.exif?.DateTimeOriginal,
+            aspectRatio: width / height,
         }
     }
 }

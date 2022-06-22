@@ -1,3 +1,4 @@
 node_modules/
-processed/*
+processed/*.jpeg
+processed/*.json
 *.log

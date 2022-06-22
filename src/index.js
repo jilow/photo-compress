@@ -1,5 +1,6 @@
 const fs = require('node:fs/promises');
 const express = require('express');
+const cors = require('cors');
 const fileUpload = require('express-fileupload');
 const Image = require('./image');
 const DatabaseConnection = require('./database')
@@ -13,6 +14,7 @@ let watermark;
 
 const app = express();
 app.use(fileUpload());
+app.use(cors());
 
 app.get('/', (req, res) => {
     res.sendFile(relativePath('../public/index.html'));
@@ -43,7 +45,7 @@ app.post('/upload', async (req, res) => {
 
     try {
         const { title, description, tags } = req.body;
-        const { data, name: filename } = req.files.photo;
+        const { data, name: originalFilename } = req.files.photo;
 
         const image = new Image(data);
 
@@ -75,7 +77,7 @@ app.post('/upload', async (req, res) => {
             small,
             large,
             metadata,
-            originalFilename: filename,
+            originalFilename,
         });
 
         DB_CONN.insertTags(tagsArr);

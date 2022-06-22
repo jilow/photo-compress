@@ -14,7 +14,7 @@ class DatabaseConnection {
 
     insertImage({
         title,
-        filename,
+        originalFilename,
         description,
         tags,
         base64,
@@ -26,7 +26,7 @@ class DatabaseConnection {
         rows.push({
             id: rows.length + 1,
             title,
-            filename,
+            originalFilename,
             description,
             tags,
             base64,
