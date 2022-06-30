@@ -26,6 +26,7 @@ app.get('/data', async (req, res) => {
     const { images, tags } = DB_CONN.getData();
 
     res.send({
+        titles: images.map(image => image.title),
         images: images.map(image => image.originalFilename),
         tags,
     });
@@ -78,6 +79,7 @@ app.post('/upload', async (req, res) => {
             large,
             metadata,
             originalFilename,
+            tags: tagsArr,
         });
 
         DB_CONN.insertTags(tagsArr);

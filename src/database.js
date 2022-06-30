@@ -16,11 +16,11 @@ class DatabaseConnection {
         title,
         originalFilename,
         description,
-        tags,
         base64,
         small,
         large,
         metadata,
+        tags,
     }) {
         const rows = this.db.get('data') || [];
         rows.push({
@@ -28,11 +28,11 @@ class DatabaseConnection {
             title,
             originalFilename,
             description,
-            tags,
             base64,
             small,
             large,
             metadata,
+            tags,
         });
         this.db.set('data', rows);
     }

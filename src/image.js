@@ -1,6 +1,7 @@
 const sharp = require('sharp');
 const exifReader = require('exif-reader');
 const piexif = require('piexifjs');
+const { decimalToFraction, capitalize } = require('./utils.js');
 
 const addAuthorData = async (buffer) => {
     const data = buffer.toString('binary');
@@ -37,9 +38,9 @@ class Image {
         const tags = exifReader(exif);
 
         return {
-            make: tags.image?.Make,
+            make: capitalize(tags.image?.Make),
             model: tags.image?.Model,
-            speed: tags.exif?.ExposureTime,
+            exposureTime: decimalToFraction(tags.exif?.ExposureTime),
             fStop: tags.exif?.FNumber,
             iso: tags.exif?.ISO,
             focalLength: tags.exif?.FocalLength,

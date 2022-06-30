@@ -5,9 +5,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="text/javascript">
         let images = [];
+        let titles = [];
 
+        const titleWarning = () => document.querySelector('#title-warning');
         const imageWarning = () => document.querySelector('#image-warning');
         const imagePreview = () => document.getElementById("preview");
+        const inputTitle = () => document.querySelector('input[name="title"]');
         const inputTags = () => document.querySelector('input[name="tags"]');
         const inputPhoto = () => document.querySelector('input[name="photo"]');
         const alertSuccess = () => document.querySelector('#success-alert');
@@ -19,6 +22,7 @@
           const data = await fetch('./data').then((res) => res.json());
 
           images = data.images;
+          titles = data.titles.map(title => title.toLowerCase());
 
           inputTags().setAttribute('placeholder', data.tags.join(', '));
         }
@@ -36,6 +40,16 @@
             // Show warning if exists
             if (images.includes(image.name)) {
               imageWarning().innerHTML = `Image ${image.name} already exists in database.`;
+            }
+        }
+
+        const handleTitleChange = () => {
+            const title = inputTitle().value;
+            // Show warning if exists
+            if (titles.includes(title.toLowerCase())) {
+              titleWarning().innerHTML = `Title "${title}" already exists in database.`;
+            } else {
+              titleWarning().innerHTML = '';
             }
         }
 
@@ -141,9 +155,10 @@
             </label>
             <label class="block pb-6">
               <span class="block text-sm font-medium text-slate-200">Title</span>
-              <input required type="text" name="title" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400
+              <input required type="text" name="title" onchange="handleTitleChange()" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400
                 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 text-slate-800
                 "/>
+              <span id="title-warning" class="text-xs text-pink-600"></span>
             </label>
             <label class="block pb-6">
               <span class="block text-sm font-medium text-slate-200">Description</span>
