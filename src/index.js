@@ -54,7 +54,7 @@ app.post('/upload', async (req, res) => {
 
         const metadata = await image.metadata();
         const tinyBuffer = await image.toJpeg(28, 50);
-        const smallBuffer = await image.toJpeg(450, 80);
+        const smallBuffer = await image.toJpeg(450, 90);
         const largeBuffer = await image.toJpeg(1200, 95, true, watermark);
 
         // const nameNoExt = name.split('.')[0];
